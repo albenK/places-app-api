@@ -1,0 +1,27 @@
+{
+  "name": "places-app-api",
+  "version": "1.0.0",
+  "description": "API for Places App",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/albenK/places-app-api.git"
+  },
+  "author": "Alben Kalambukadu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/albenK/places-app-api/issues"
+  },
+  "homepage": "https://github.com/albenK/places-app-api#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}
