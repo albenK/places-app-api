@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
+const HttpError = require('./models/http-error');
+
 const placesRoutes = require('./routes/places-routes');
 
 const app = express();
@@ -9,6 +11,12 @@ const app = express();
 app.use(bodyParser.json());
 
 app.use('/api/places', placesRoutes); // => /api/places/...
+
+/* Register middleware to detect unknown path. */
+app.use((req, res, next) => {
+    const error = new HttpError('Could not find this route', 404);
+    throw error;
+});
 
 /* Register an error middleware. This callback will run for any errors that have happened
     in previous middlewares. */
