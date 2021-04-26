@@ -1,3 +1,4 @@
+const uuid = require('uuid');
 const HttpError = require('../models/http-error');
 const DUMMY_PLACES = require('../dummy-places');
 
@@ -25,5 +26,23 @@ const getPlaceByUserId = (req, res, next) => {
     res.json({place});
 };
 
+const createPlace = (req, res, next) => {
+    const { title, description, coordinates, address, creator } = req.body;
+    // TODO: Validate the body properties before creating a new place.
+    const newPlace = {
+        id: uuid.v4(),
+        title,
+        description,
+        location: coordinates,
+        address,
+        creator
+    };
+    // TODO: Replace with MongoDB logic later.
+    DUMMY_PLACES.push(newPlace);
+
+    res.status(201).json({ place: newPlace });
+};
+
 exports.getPlaceById = getPlaceById;
 exports.getPlaceByUserId = getPlaceByUserId;
+exports.createPlace = createPlace;

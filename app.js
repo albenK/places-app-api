@@ -5,6 +5,9 @@ const placesRoutes = require('./routes/places-routes');
 
 const app = express();
 
+/* Register middleware for body-parser. This will parse any request's body as json.*/
+app.use(bodyParser.json());
+
 app.use('/api/places', placesRoutes); // => /api/places/...
 
 /* Register an error middleware. This callback will run for any errors that have happened
