@@ -10,5 +10,9 @@ router.get('/user/:userId', placesController.getPlaceByUserId);
 
 router.post('/', placesController.createPlace);
 
+router.patch('/:placeId', placesController.updatePlace);
+
+router.delete('/:placeId', placesController.deletePlace);
+
 
 module.exports = router;
