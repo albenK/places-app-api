@@ -1,6 +1,8 @@
 const uuid = require('uuid');
 const { validationResult } = require('express-validator');
+
 const HttpError = require('../models/http-error');
+const getCoordsFromAddress = require('../utils/location');
 
 // TODO: Delete once database is implemented.
 let DUMMY_PLACES = [
@@ -49,15 +51,20 @@ const getPlacesByUserId = (req, res, next) => {
     res.json({ places });
 };
 
-const createPlace = (req, res, next) => {
+const createPlace = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        throw new HttpError('Invalid inputs passed. Please check your data.', 422);
+        const error = new HttpError('Invalid inputs passed. Please check your data.', 422);
+        return next(error);
     }
 
-    const { title, description, coordinates, address, creator } = req.body;
-    /* TODO: Use Google's Geocoding API to retrieve coordinates from address,
-        instead of expecting the coordinates from the req.body. */
+    const { title, description, address, creator } = req.body;
+    let coordinates;
+    try {
+        coordinates = await getCoordsFromAddress(address);
+    } catch (error) {
+        return next(error);
+    }
     const newPlace = {
         id: uuid.v4(),
         title,
