@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 const HttpError = require('./models/http-error');
 
@@ -32,4 +33,10 @@ app.use((error, req, res, next) => {
     res.json({ message: error.message || 'An unknown error occurred!'});
 });
 
-app.listen(5000);
+mongoose.connect('mongodb+srv://albenk:PhZGmXCktbvuWSkj@cluster0.ghwez.mongodb.net/places?retryWrites=true&w=majority', { useNewUrlParser: true})
+.then(() => {
+    app.listen(5000);
+})
+.catch((error) => {
+    console.log(error);
+});

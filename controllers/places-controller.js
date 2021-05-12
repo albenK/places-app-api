@@ -3,6 +3,7 @@ const { validationResult } = require('express-validator');
 
 const HttpError = require('../models/http-error');
 const getCoordsFromAddress = require('../utils/location');
+const Place = require('../models/place');
 
 // TODO: Delete once database is implemented.
 let DUMMY_PLACES = [
@@ -65,18 +66,24 @@ const createPlace = async (req, res, next) => {
     } catch (error) {
         return next(error);
     }
-    const newPlace = {
-        id: uuid.v4(),
+    
+    const createdPlace = new Place({
         title,
         description,
-        location: coordinates,
         address,
+        location: coordinates,
+        image: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Empire_State_Building%2C_New_York%2C_NY.jpg',
         creator
-    };
-    // TODO: Replace with MongoDB logic later.
-    DUMMY_PLACES.push(newPlace);
+    });
+    
+    try {
+        await createdPlace.save();
+    } catch (error) {
+        const httpError = new HttpError('Creating place failed. Please try again', 500);
+        return next(httpError);
+    }
 
-    res.status(201).json({ place: newPlace });
+    res.status(201).json({ place: createdPlace });
 };
 
 const updatePlace = (req, res, next) => {
