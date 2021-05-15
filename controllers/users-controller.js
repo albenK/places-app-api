@@ -43,13 +43,12 @@ const signUp = async (req, res, next) => {
         return next(error);
     }
 
-
     const newUser = new User({
         name,
         email,
         image: 'https://image.flaticon.com/icons/png/128/149/149071.png',
         password,
-        places: 'p1'
+        places: []
     });
 
     // save user to DB

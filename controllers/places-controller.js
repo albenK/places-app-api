@@ -1,9 +1,11 @@
 const uuid = require('uuid');
 const { validationResult } = require('express-validator');
+const mongoose = require('mongoose');
 
 const HttpError = require('../models/http-error');
 const getCoordsFromAddress = require('../utils/location');
 const Place = require('../models/place');
+const User = require('../models/user');
 
 const getPlaceById = async (req, res, next) => {
     const placeId = req.params.placeId;
@@ -58,7 +60,9 @@ const createPlace = async (req, res, next) => {
     try {
         coordinates = await getCoordsFromAddress(address);
     } catch (error) {
-        return next(error);
+        return next(
+            new HttpError('Address lookup failed. Please try again later.', 500)
+        );
     }
     
     const createdPlace = new Place({
@@ -70,14 +74,41 @@ const createPlace = async (req, res, next) => {
         creator
     });
     
+    // try and find a user with the provided user id (creator)
+    let user;
+
     try {
-        await createdPlace.save();
+        user = await User.findById(creator);
     } catch (error) {
-        const httpError = new HttpError('Creating place failed. Please try again', 500);
+        return next(
+            new HttpError('Creator lookup failed. Please try again later.', 500)
+        );
+    }
+
+    // If no user found, forward error to error handler.
+    if (!user) {
+        return next(
+            new HttpError('Could not find user for provided user id.', 404)
+        );
+    }
+
+    /* Start a new mongo DB session to save new place and save the place 
+        id to user.places array. If anything goes wrong, MongoDB will rollback these changes.
+        */
+    try {
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        // NOTE: Need to make sure we have "places" collection in our DB. Else save won't work.
+        await createdPlace.save({ session: session });
+        user.places.push(createdPlace); // MongoDB will only add the place id.
+        await user.save({ session: session });
+        await session.commitTransaction(); // When this resolves, all changes are commited.
+    } catch (error) {
+        const httpError = new HttpError('Creating place failed. Please try again later.', 500);
         return next(httpError);
     }
 
-    res.status(201).json({ place: createdPlace });
+    res.status(201).json({ place: createdPlace.toObject({ getters: true })});
 };
 
 const updatePlace = async (req, res, next) => {
