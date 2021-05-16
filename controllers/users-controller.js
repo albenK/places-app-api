@@ -1,4 +1,3 @@
-const uuid = require('uuid');
 const { validationResult } = require('express-validator');
 const HttpError = require('../models/http-error');
 const User = require('../models/user');
@@ -47,7 +46,7 @@ const signUp = async (req, res, next) => {
         name,
         email,
         image: 'https://image.flaticon.com/icons/png/128/149/149071.png',
-        password,
+        password, // TODO: hash password
         places: []
     });
 
@@ -79,7 +78,7 @@ const signIn = async (req, res, next) => {
         const error = new HttpError('Invalid credentials. Could not log you in.', 401);
         return next(error);
     }
-
+    // TODO: Send a token with the user data. Remove password from response.
     res.json({ message: 'Logged in' });
 };
 

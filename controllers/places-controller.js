@@ -1,6 +1,5 @@
-const uuid = require('uuid');
-const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
+const { validationResult } = require('express-validator');
 
 const HttpError = require('../models/http-error');
 const getCoordsFromAddress = require('../utils/location');
@@ -33,7 +32,7 @@ const getPlacesByUserId = async (req, res, next) => {
     try {
         places = await Place.find({ creator: userId });
     } catch(error) {
-        const httpError = new HttpError('Something went wrong. Please try again later.', 500);
+        const httpError = new HttpError('Something went wrong with finding the place. Please try again later.', 500);
         return next(httpError);
     }
 
@@ -153,16 +152,32 @@ const deletePlace = async (req, res, next) => {
     let place;
 
     try {
-        place = await Place.findById(placeId);
+        /* populate function will retrieve the creator and populate the "place.creator" prop
+        with the user object. The populate function ONLY works because of the way we defined
+        our Mongoose Schema. A Place has a creator prop which is a reference to a User. So populate
+        function will populate the "creator" prop with the user object for us. This makes it possible to access User props.
+        For example: "place.creator.places" or "place.creator.email"*/
+        place = await Place.findById(placeId).populate('creator');
     } catch (error) {
-        const httpError = new HttpError('Something went wrong. Could not delete place.', 500);
+        const httpError = new HttpError('Something went wrong with finding the place.', 500);
+        return next(httpError);
+    }
+
+    if (!place) {
+        const httpError = new HttpError('Could not find a place with the provided id.', 404);
         return next(httpError);
     }
 
     try {
-        await place.remove();
+        const session = await mongoose.startSession();
+        session.startTransaction();
+        await place.remove({ session: session });
+        // MongoDB populates creator with the user object (User that created this place). This is because of the populate function from above.
+        place.creator.places.pull(place); // MongoDB will remove this place (place id) from it's creators "places" array.
+        await place.creator.save({ session: session }); // save the user
+        await session.commitTransaction();
     } catch (error) {
-        const httpError = new HttpError('Something went wrong. Could not delete place.', 500);
+        const httpError = new HttpError('Something went wrong with deleting this place. Please try again later', 500);
         return next(httpError);
     }
 

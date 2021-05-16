@@ -11,6 +11,7 @@ const userSchema = new Schema({
     places: [{ type: mongoose.Types.ObjectId, required: true, ref: 'Place' }]
 });
 
+// uniqueValidator will check for duplicate database entries and report them just like any other validation error
 mongoose.plugin(uniqueValidator);
 
 module.exports = mongoose.model('User', userSchema);
