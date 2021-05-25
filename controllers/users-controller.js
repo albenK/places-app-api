@@ -78,8 +78,10 @@ const signIn = async (req, res, next) => {
         const error = new HttpError('Invalid credentials. Could not log you in.', 401);
         return next(error);
     }
+
+    existingUser = existingUser.toObject({ getters: true });
     // TODO: Send a token with the user data. Remove password from response.
-    res.json({ message: 'Logged in' });
+    res.json({ message: 'Logged in', user: existingUser });
 };
 
 exports.getUsers = getUsers;
