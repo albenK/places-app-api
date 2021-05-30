@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 const mongoose = require('mongoose');
 const { validationResult } = require('express-validator');
 
@@ -69,7 +71,7 @@ const createPlace = async (req, res, next) => {
         description,
         address,
         location: coordinates,
-        image: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Empire_State_Building%2C_New_York%2C_NY.jpg',
+        image: req.file.path, // should be "uploads/images/..."
         creator
     });
     
@@ -168,6 +170,7 @@ const deletePlace = async (req, res, next) => {
         return next(httpError);
     }
 
+    const imagePath = place.image;
     try {
         const session = await mongoose.startSession();
         session.startTransaction();
@@ -180,6 +183,11 @@ const deletePlace = async (req, res, next) => {
         const httpError = new HttpError('Something went wrong with deleting this place. Please try again later', 500);
         return next(httpError);
     }
+
+    // Delete the image for this place.
+    fs.unlink(imagePath, (err) => {
+        console.log(err);
+    });
 
     res.status(200).json({ message: 'Deleted place.' });
 };
