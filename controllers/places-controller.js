@@ -133,6 +133,12 @@ const updatePlace = async (req, res, next) => {
         return next(error);
     }
 
+    // Only the creator can edit the place
+    if (req.userData.userId !== place.creator.toString()) {
+        const error = new HttpError('You are not allowed to edit this place', 403);
+        return next(error);
+    }
+
     const { title, description } = req.body;
 
     place.title = title;
@@ -158,7 +164,7 @@ const deletePlace = async (req, res, next) => {
         with the user object. The populate function ONLY works because of the way we defined
         our Mongoose Schema. A Place has a creator prop which is a reference to a User. So populate
         function will populate the "creator" prop with the user object for us. This makes it possible to access User props.
-        For example: "place.creator.places" or "place.creator.email"*/
+        For example: "place.creator.places" or "place.creator.email" or "place.creator.id"*/
         place = await Place.findById(placeId).populate('creator');
     } catch (error) {
         const httpError = new HttpError('Something went wrong with finding the place.', 500);
@@ -168,6 +174,12 @@ const deletePlace = async (req, res, next) => {
     if (!place) {
         const httpError = new HttpError('Could not find a place with the provided id.', 404);
         return next(httpError);
+    }
+
+    // Only the creator can delete the place
+    if (req.userData.userId !== place.creator.id) {
+        const error = new HttpError('You are not allowed to delete this place', 403);
+        return next(error);
     }
 
     const imagePath = place.image;
