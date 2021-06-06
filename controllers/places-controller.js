@@ -56,7 +56,7 @@ const createPlace = async (req, res, next) => {
         return next(error);
     }
 
-    const { title, description, address, creator } = req.body;
+    const { title, description, address } = req.body;
     let coordinates;
     try {
         coordinates = await getCoordsFromAddress(address);
@@ -72,14 +72,14 @@ const createPlace = async (req, res, next) => {
         address,
         location: coordinates,
         image: req.file.path, // should be "uploads/images/..."
-        creator
+        creator: req.userData.userId // set in check-auth.js file
     });
     
     // try and find a user with the provided user id (creator)
     let user;
 
     try {
-        user = await User.findById(creator);
+        user = await User.findById(req.userData.userId);
     } catch (error) {
         return next(
             new HttpError('Creator lookup failed. Please try again later.', 500)
