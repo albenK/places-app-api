@@ -1,10 +1,9 @@
 const axios = require('axios');
-const environmentVars = require('../environment');
 const HttpError = require('../models/http-error');
 
 
 const getCoordsFromAddress = async (address) => {
-    const url = `https://us1.locationiq.com/v1/search.php?key=${environmentVars.LOCATION_IQ_API_KEY}&q=${encodeURIComponent(address)}&format=json`;
+    const url = `https://us1.locationiq.com/v1/search.php?key=${process.env.LOCATION_IQ_API_KEY}&q=${encodeURIComponent(address)}&format=json`;
     const response = await axios.get(url);
 
     const addressData = response.data[0];

@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const environmentVars = require('../environment');
 const HttpError = require("../models/http-error");
 
 module.exports = (req, res, next) => {
@@ -18,7 +17,7 @@ module.exports = (req, res, next) => {
         }
 
         // Verify the token
-        const payload = jwt.verify(token, environmentVars.JWT_PRIVATE_KEY);
+        const payload = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
         // Attach a "userData" key to the request and forward to next middleware.
         req.userData = { userId: payload.userId };
         next();
